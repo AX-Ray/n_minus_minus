@@ -57,7 +57,7 @@ double Network::mse_loss(const Matrix& output, const Matrix& target) {
 void Network::save(const std::string& filename) const {
     std::ofstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error: Cannot open file " << filename << " for writing!" << std::endl;
+        std::cerr << "cannot open" << std::endl;
         return;
     }
         
@@ -90,7 +90,7 @@ void Network::save(const std::string& filename) const {
 void Network::load(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error: Cannot open file " << filename << " for reading!" << std::endl;
+        std::cerr << "cannot open" << std::endl;
         return;
     }
         
@@ -98,8 +98,7 @@ void Network::load(const std::string& filename) {
     file >> num_layers;
         
     if (num_layers != layers.size()) {
-        std::cerr << "Error: Network architecture mismatch! Expected " 
-                  << layers.size() << " layers, got " << num_layers << std::endl;
+        std::cerr << "mismatch" << std::endl;
         file.close();
         return;
     }
@@ -110,7 +109,7 @@ void Network::load(const std::string& filename) {
                 
         if (in_size != layers[i]->get_input_size() || 
             out_size != layers[i]->get_output_size()) {
-            std::cerr << "Error: Layer " << i << " size mismatch!" << std::endl;
+            std::cerr << "mismatch" << std::endl;
             file.close();
             return;
         }
