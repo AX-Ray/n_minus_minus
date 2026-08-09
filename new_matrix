@@ -1,0 +1,38 @@
+Matrix::Matrix(int r, int c) : data(af::constant(0.0f, r, c, f32)) {}
+
+Matrix::Matrix(af::array&& internal_data) : data(std::move(internal_data)) {}
+
+Matrix::Matrix(int r, int c, const std::vector<float>& host_data) {
+    if (host_data.size() != static_cast<size_t>(r * c)) {
+        throw std::invalid_argument("sdw");
+    }    
+    data = af::array(c, r, host_data.data()).T();
+}
+
+int Matrix::getRows() const { return data.dims(0); }
+int Matrix::getCols() const { return data.dims(1); }
+
+float Matrix::operator()(int r, int c) const {
+    float value = 0;
+    data(r, c).host(&value);
+    return value;
+}
+
+void Matrix::set(int r, int c, float value) {
+    data(r, c) = value;
+}
+
+Matrix Matrix::operator*(const Matrix& other) const {
+    if (this->getCols() != other.getRows()) {
+        throw std::runtime_error("asdw");
+    }
+        
+    return Matrix(af::matmul(this->data, other.data));
+}
+
+std::vector<float> Matrix::toCPU() const {
+    std::vector<float> host_data(getRows() * getCols());
+    af::array row_major = data.T();
+    row_major.host(host_data.data());
+    return host_data;
+}
