@@ -67,7 +67,7 @@ int main() {
     } 
         
     double learning_rate = 0.1;  
-    int epochs = 1000;         
+    int epochs = 10000;         
         
     
     net_train(net, epochs, learning_rate, inputs, targets);
