@@ -9,6 +9,7 @@ class Activation {
         virtual ~Activation() = default;
 };
 
+
 class Sigmoid : public Activation {
     public:
         double forward(double x) override;
@@ -31,6 +32,34 @@ class LeakyReLU : public Activation {
 };
 
 class Linear : public Activation {
+    public:
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
+class TanH : public Activation {
+    public:
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
+class SELU : public Activation {
+    private:
+        double lambda;
+        double alpha;
+    public:
+        SELU(double l = 1.0507009873554804934193349852946, double a = 1.6732632423543772848170429916717);
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
+class Swish : public Activation {
+    public:
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
+class Mish : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;

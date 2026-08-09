@@ -28,7 +28,7 @@ void Network::backward(const Matrix& grad_output, double learning_rate) {
 
 double Network::train(const Matrix& input, const Matrix& target, double learning_rate) {    
     Matrix output = forward(input);
-        
+            
     double loss = mse_loss(output, target);
         
     Matrix grad_output(output.rows, output.cols);
