@@ -50,8 +50,8 @@ int main() {
         }
     }
 
-    std::string filename = "model_x2.txt";
-    net.save(filename); 
+    /*std::string filename = "model_x2.txt";
+    net.save(filename); */
 
 
     std::ofstream file("predict.txt");

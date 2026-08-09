@@ -12,5 +12,5 @@ class Matrix {
         double& operator()(int r, int c);
         const double& operator()(int r, int c) const;
 
-        Matrix operator*(const Matrix& other) const;
+        Matrix operator*(const Matrix& other) const;        
 };

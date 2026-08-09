@@ -33,7 +33,7 @@ Matrix Layer::forward(const Matrix& input) {
     input_cache = input;
     
     // z = W * x + b    
-    linear_cache = weights * input;    
+    linear_cache = weights * input;
     for (int i = 0; i < output_size; ++i) {
         linear_cache(i, 0) += biases(i, 0);
     }
