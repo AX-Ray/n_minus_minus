@@ -4,14 +4,15 @@
 #include <memory>
 #include <string>
 #include <fstream>
-#include <sstream>
 #include <cmath>
+#include <cstdlib> 
+#include <ctime> 
 
-void net_train(Network& net, int epochs, double l_r, std::vector<double> inputs, std::vector<double> targets) {
+void net_train(Network& net, int epochs, double l_r, const std::vector<double>& inputs, const std::vector<double>& targets) {
     for (int epoch = 0; epoch <= epochs; ++epoch) {
         double total_loss = 0.0;
 
-        if (epoch > 0 && epoch % 10000 == 0) {
+        if (epoch > 0 && epoch % 10000 == 0) { // Changing learning rate during trainig
             l_r /= 4.0;            
         }
         
@@ -31,13 +32,13 @@ void net_train(Network& net, int epochs, double l_r, std::vector<double> inputs,
     }
 }
 
-void net_init(Network& net) {
+void net_init(Network& net) { 
     net.add_layer(std::make_unique<Layer>(1, 20, std::make_unique<ReLU>()));       
     net.add_layer(std::make_unique<Layer>(20, 20, std::make_unique<LeakyReLU>(0.01)));       
     net.add_layer(std::make_unique<Layer>(20, 1, std::make_unique<Linear>()));       
 }
 
-void predict_save(Network& net, const std::string& filename = "predict.txt") {
+void predict_save(Network& net, const std::string& filename = "output/predict.txt") {
     std::ofstream file(filename);
         
     for (double x = -100.0; x <= 100.0; x += 0.5) {
@@ -52,6 +53,7 @@ void predict_save(Network& net, const std::string& filename = "predict.txt") {
     file.close();
 }
 
+
 int main() {    
     std::srand(time(nullptr)); 
 
@@ -65,15 +67,11 @@ int main() {
     } 
         
     double learning_rate = 0.1;  
-    int epochs = 1000; 
-    
-    //net.load("model_mult2v4.txt");
+    int epochs = 1000;         
         
     
     net_train(net, epochs, learning_rate, inputs, targets);
-
-    /*std::string filename = "model_x2.txt";
-    net.save(filename); */
+  
 
     predict_save(net);
     

@@ -64,3 +64,43 @@ class Mish : public Activation {
         double forward(double x) override;
         double backward(double x) override;
 };
+
+class LSLU : public Activation {
+    public:
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
+class GELU : public Activation {
+    public:
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
+class ELU : public Activation {
+    private:
+        double alpha;
+    public:
+        ELU(double a = 1.0);
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
+class Softplus : public Activation {
+    public:
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
+class APLU : public Activation {
+    private:
+        double alpha;  
+        double lambda; 
+        double beta;   
+        double gamma;  
+    public:
+        APLU(double a = 0.05, double l = 1.0, double b = 0.2, double g = 1.0);
+        double forward(double x) override;
+        double backward(double x) override;
+};
+
