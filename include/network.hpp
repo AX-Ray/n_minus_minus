@@ -2,8 +2,9 @@
 
 #include <vector>
 #include <memory>
+#include <string>
+#include <arrayfire.h> 
 #include "layer.hpp"
-#include "matrix.hpp"
 
 class Network {
     private:
@@ -13,16 +14,16 @@ class Network {
         Network() = default;
                 
         void add_layer(std::unique_ptr<Layer> layer);
+                        
+        af::array forward(const af::array& input);
+                        
+        void backward(const af::array& grad_output, float learning_rate);
+                        
+        float train(const af::array& input, const af::array& target, float learning_rate);
                 
-        Matrix forward(const Matrix& input);
+        af::array predict(const af::array& input);
                 
-        void backward(const Matrix& grad_output, double learning_rate);
-                
-        double train(const Matrix& input, const Matrix& target, double learning_rate);
-                
-        Matrix predict(const Matrix& input);
-                
-        double mse_loss(const Matrix& output, const Matrix& target);
+        float mse_loss(const af::array& output, const af::array& target);
                 
         size_t get_layer_count() const { return layers.size(); }   
         

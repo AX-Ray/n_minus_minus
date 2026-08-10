@@ -1,16 +1,17 @@
 #pragma once
-
-#include <vector>
+#include <arrayfire.h>
 
 class Matrix {
-    public:
-        int rows, cols;
-        std::vector<double> data;
-        
-        Matrix(int r, int c);
+private:
+    int rows;
+    int cols;
+    af::array data; 
 
-        double& operator()(int r, int c);
-        const double& operator()(int r, int c) const;
-
-        Matrix operator*(const Matrix& other) const;        
+public:
+    Matrix(int r, int c);    
+    Matrix(int r, int c, af::array af_data); 
+    
+    float operator()(int r, int c) const; 
+    
+    Matrix operator*(const Matrix& other) const;
 };

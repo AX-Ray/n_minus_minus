@@ -1,159 +1,209 @@
 #include "../include/activ.hpp"
+#include <cmath>
 
-double Sigmoid::forward(double x) {
-    return 1.0 / (1.0 + std::exp(-x));
-}
-
-double Sigmoid::backward(double x) {
-    return x * (1.0 - x);
+static af::array af_sigmoid(const af::array& x) {
+    return 1.0f / (1.0f + af::exp(-x));
 }
 
 
-double ReLU::forward(double x) {
-    return std::max(0.0, x);
+af::array Sigmoid::forward(const af::array& x) {
+    return af_sigmoid(x);
 }
 
-double ReLU::backward(double x) {
-    return x > 0 ? 1.0 : 0.0;
-}
-
-
-LeakyReLU::LeakyReLU(double a) : alpha(a) {}
-
-double LeakyReLU::forward(double x) {
-    return x > 0 ? x : alpha * x;
-}
-
-double LeakyReLU::backward(double x) {
-    return x > 0 ? 1.0 : alpha;
+af::array Sigmoid::backward(const af::array& x) {    
+    return x * (1.0f - x);
 }
 
 
-double Linear::forward(double x) {
+af::array ReLU::forward(const af::array& x) {    
+    return af::max(x, 0.0f);
+}
+
+af::array ReLU::backward(const af::array& x) {    
+    return (x > 0.0f).as(f32);
+}
+
+
+LeakyReLU::LeakyReLU(float a) : alpha(a) {}
+
+af::array LeakyReLU::forward(const af::array& x) {    
+    return af::select(x > 0.0f, x, alpha * x);
+}
+
+af::array LeakyReLU::backward(const af::array& x) {        
+    af::array true_branch = af::constant(1.0f, x.dims(), f32);
+    af::array false_branch = af::constant(alpha, x.dims(), f32);
+        
+    return af::select(x > 0.0f, true_branch, false_branch);
+}
+
+
+
+af::array Linear::forward(const af::array& x) {
     return x;
 }
 
-double Linear::backward(double x) {
-    return 1.0;
+af::array Linear::backward(const af::array& x) {    
+    return af::constant(1.0f, x.dims(), f32);
 }
 
 
-double TanH::forward(double x) {
-    return std::tanh(x);
+af::array TanH::forward(const af::array& x) {
+    return af::tanh(x);
 }
 
-double TanH::backward(double x) {    
-    return 1.0 - x * x;
-}
-
-
-SELU::SELU(double l, double a) : lambda(l), alpha(a) {}
-
-double SELU::forward(double x) {
-    return x >= 0 ? lambda * x : lambda * alpha * (std::exp(x) - 1.0);
-}
-
-double SELU::backward(double x) {    
-    return x >= 0 ? lambda : x + lambda * alpha;
+af::array TanH::backward(const af::array& x) {    
+    return 1.0f - x * x;
 }
 
 
-double Swish::forward(double x) {    
-    return x / (1.0 + std::exp(-x));
+SELU::SELU(float l, float a) : lambda(l), alpha(a) {}
+
+af::array SELU::forward(const af::array& x) {
+    return af::select(x >= 0.0f, lambda * x, lambda * alpha * (af::exp(x) - 1.0f));
 }
 
-double Swish::backward(double x) {    
-    double sig = 1.0 / (1.0 + std::exp(-x));
-    return x * sig + sig * (1.0 - x * sig);
+af::array SELU::backward(const af::array& x) {        
+    return af::select(x >= 0.0f, lambda, lambda * alpha * af::exp(x));
 }
 
 
-double Mish::forward(double x) {    
-    double sp = std::log(1.0 + std::exp(x));  
-    return x * std::tanh(sp);
+af::array Swish::forward(const af::array& x) {    
+    return x * af_sigmoid(x);
 }
 
-double Mish::backward(double x) {    
-    double ex = std::exp(x);
-    double ex2 = ex * ex;
-    double ex3 = ex2 * ex;
+af::array Swish::backward(const af::array& x) {    
+    af::array sig = af_sigmoid(x);
+    return x * sig + sig * (1.0f - x * sig);
+}
+
+
+af::array Mish::forward(const af::array& x) {        
+    af::array sp = af::log1p(af::exp(x));  
+    return x * af::tanh(sp);
+}
+
+af::array Mish::backward(const af::array& x) {    
+    af::array ex = af::exp(x);
+    af::array ex2 = ex * ex;
+    af::array ex3 = ex2 * ex;
     
-    double omega = 4.0 * (x + 1.0) + 4.0 * ex2 + ex3 + ex * (4.0 * x + 6.0);
-    double delta = 2.0 * ex + ex2 + 2.0;
+    af::array omega = 4.0f * (x + 1.0f) + 4.0f * ex2 + ex3 + ex * (4.0f * x + 6.0f);
+    af::array delta = 2.0f * ex + ex2 + 2.0f;
     
     return (ex * omega) / (delta * delta);
 }
 
 
-double LSLU::forward(double x) {    
-    double swish = x / (1.0 + std::exp(-x));
-    double softplus = (x > 20.0) ? x : std::log1p(std::exp(x)); 
-    return swish + softplus - std::log(2.0);
+af::array LSLU::forward(const af::array& x) {    
+    af::array swish = x * af_sigmoid(x);    
+    af::array softplus = af::select(x > 20.0f, x, af::log1p(af::exp(x))); 
+    return swish + softplus - std::log(2.0f);
 }
 
-double LSLU::backward(double x) {    
-    double sig = 1.0 / (1.0 + std::exp(-x));
-    double d_swish = x * sig + sig * (1.0 - x * sig);
-    double d_softplus = sig; 
-    
+af::array LSLU::backward(const af::array& x) {    
+    af::array sig = af_sigmoid(x);
+    af::array d_swish = x * sig + sig * (1.0f - x * sig);
+    af::array d_softplus = sig; 
     return d_swish + d_softplus;
 }
 
 
-double GELU::forward(double x) {
-    constexpr double kSqrt2OverPi = 0.7978845608028654; 
-    double x_cubed = x * x * x;
-    double inner = kSqrt2OverPi * (x + 0.044715 * x_cubed);
-    return 0.5 * x * (1.0 + std::tanh(inner));
+af::array SLSLU::forward(const af::array& x) {    
+    af::array swish = x * af_sigmoid(x);
+    af::array softplus = af::select(x > 20.0f, x, af::log1p(af::exp(x))); 
+    return 0.5f * (swish + softplus - std::log(2.0f));
 }
 
-double GELU::backward(double x) {
-    constexpr double kSqrt2OverPi = 0.7978845608028654;
-    double x_sq = x * x;
-    double x_cubed = x_sq * x;
-    double inner = kSqrt2OverPi * (x + 0.044715 * x_cubed);
-    double tanh_inner = std::tanh(inner);
+af::array SLSLU::backward(const af::array& x) {    
+    af::array sig = af_sigmoid(x);
+    af::array d_swish = x * sig + sig * (1.0f - x * sig);
+    af::array d_softplus = sig; 
+    return 0.5f * (d_swish + d_softplus);
+}
+
+
+af::array GELU::forward(const af::array& x) {
+    constexpr float kSqrt2OverPi = 0.7978845608028654f; 
+    af::array x_cubed = x * x * x;
+    af::array inner = kSqrt2OverPi * (x + 0.044715f * x_cubed);
+    return 0.5f * x * (1.0f + af::tanh(inner));
+}
+
+af::array GELU::backward(const af::array& x) {
+    constexpr float kSqrt2OverPi = 0.7978845608028654f;
+    af::array x_sq = x * x;
+    af::array x_cubed = x_sq * x;
+    af::array inner = kSqrt2OverPi * (x + 0.044715f * x_cubed);
+    af::array tanh_inner = af::tanh(inner);
         
-    double sech_sq = 1.0 - tanh_inner * tanh_inner;
-    double d_inner = kSqrt2OverPi * (1.0 + 3.0 * 0.044715 * x_sq);
+    af::array sech_sq = 1.0f - tanh_inner * tanh_inner;
+    af::array d_inner = kSqrt2OverPi * (1.0f + 3.0f * 0.044715f * x_sq);
     
-    return 0.5 * (1.0 + tanh_inner) + 0.5 * x * sech_sq * d_inner;
+    return 0.5f * (1.0f + tanh_inner) + 0.5f * x * sech_sq * d_inner;
 }
 
 
-ELU::ELU(double a) : alpha(a) {}
+ELU::ELU(float a) : alpha(a) {}
 
-double ELU::forward(double x) {
-    return x >= 0.0 ? x : alpha * (std::exp(x) - 1.0);
+af::array ELU::forward(const af::array& x) {
+    return af::select(x >= 0.0f, x, alpha * (af::exp(x) - 1.0f));
 }
 
-double ELU::backward(double x) {    
-    return x >= 0.0 ? 1.0 : alpha * std::exp(x);
-}
-
-
-double Softplus::forward(double x) {    
-    return x > 20.0 ? x : std::log1p(std::exp(x));
-}
-
-double Softplus::backward(double x) {    
-    return 1.0 / (1.0 + std::exp(-x));
+af::array ELU::backward(const af::array& x) {    
+    return af::select(x >= 0.0f, 1.0f, alpha * af::exp(x));
 }
 
 
-APLU::APLU(double a, double l, double b, double g) : alpha(a), lambda(l), beta(b), gamma(g) {}
-
-double APLU::forward(double x) {    
-    double base = (x >= 0.0) ? (lambda * x) : (alpha * x);
-    return base + beta * std::tanh(gamma * x);
+af::array Softplus::forward(const af::array& x) {    
+    return af::select(x > 20.0f, x, af::log1p(af::exp(x)));
 }
 
-double APLU::backward(double x) {    
-    double d_base = (x >= 0.0) ? lambda : alpha;
+af::array Softplus::backward(const af::array& x) {    
+    return af_sigmoid(x);
+}
+
+
+APLU::APLU(float a, float l, float b, float g) : alpha(a), lambda(l), beta(b), gamma(g) {}
+
+af::array APLU::forward(const af::array& x) {    
+    af::array base = af::select(x >= 0.0f, lambda * x, alpha * x);
+    return base + beta * af::tanh(gamma * x);
+}
+
+af::array APLU::backward(const af::array& x) {        
+    af::array true_branch = af::constant(lambda, x.dims(), f32);
+    af::array false_branch = af::constant(alpha, x.dims(), f32);
         
-    double t = std::tanh(gamma * x);
-    double d_tanh = beta * gamma * (1.0 - t * t);
+    af::array d_base = af::select(x >= 0.0f, true_branch, false_branch);
+        
+    af::array t = af::tanh(gamma * x);
+    af::array d_tanh = beta * gamma * (1.0f - t * t);
     
     return d_base + d_tanh;
 }
 
+
+
+ELUSwish::ELUSwish(float a, float b) : alpha(a), beta(b) {}
+
+af::array ELUSwish::forward(const af::array& x) {
+    af::array sig_pos = af_sigmoid(x);      
+    af::array sig_neg = 1.0f / (1.0f + af::exp(beta * x)); 
+    af::array neg_part = (af::exp(-beta * x) - 1.0f) * sig_neg;
+    return x * sig_pos + alpha * neg_part;
+}
+
+af::array ELUSwish::backward(const af::array& x) {    
+    af::array sig_pos = af_sigmoid(x);
+    af::array d_swish = sig_pos + x * sig_pos * (1.0f - sig_pos);
+    
+    af::array sig_neg = 1.0f / (1.0f + af::exp(beta * x));
+    af::array exp_neg = af::exp(-beta * x);
+    af::array u = exp_neg - 1.0f;
+    af::array d_u = -beta * exp_neg;
+    af::array dsig_neg = -beta * sig_neg * (1.0f - sig_neg);
+    af::array d_neg = d_u * sig_neg + u * dsig_neg;
+
+    return d_swish + alpha * d_neg;
+}

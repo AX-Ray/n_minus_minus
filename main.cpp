@@ -8,29 +8,21 @@
 #include <cstdlib> 
 #include <ctime> 
 
-void net_train(Network& net, int epochs, double l_r, const std::vector<double>& inputs, const std::vector<double>& targets) {
+void net_train(Network& net, int epochs, float l_r, const af::array& inputs, const af::array& targets) {
     for (int epoch = 0; epoch <= epochs; ++epoch) {
-        double total_loss = 0.0;
 
-        if (epoch > 0 && epoch % 10000 == 0) { // Changing learning rate during trainig
-            l_r /= 4.0;            
+        if (epoch > 0 && epoch % 10000 == 0) {
+            l_r /= 4.0f;            
         }
-        
-        for (int i = 0; i < inputs.size(); i++) {
-            Matrix input(1, 1);
-            input(0, 0) = inputs[i] / 100.0; 
-            
-            Matrix target(1, 1);
-            target(0, 0) = targets[i] / 10000.0;  
-            
-            total_loss += net.train(input, target, l_r);
-        }  
+                
+        float loss = net.train(inputs, targets, l_r);
         
         if (epoch % 1000 == 0) {
-            std::cout << "Epoch " << epoch << ", loss: " << total_loss / inputs.size() << std::endl;
+            std::cout << "Epoch " << epoch << ", loss: " << loss << std::endl;
         }
     }
 }
+
 
 void net_init(Network& net) { 
     net.add_layer(std::make_unique<Layer>(1, 20, std::make_unique<ReLU>()));       
@@ -41,40 +33,53 @@ void net_init(Network& net) {
 void predict_save(Network& net, const std::string& filename = "output/predict.txt") {
     std::ofstream file(filename);
         
-    for (double x = -100.0; x <= 100.0; x += 0.5) {
-        Matrix input(1, 1);
-        input(0, 0) = x / 100.0;  
+    af::array x_af = af::array(af::seq(-100.0f, 100.0f, 0.5f)); 
+    x_af = af::transpose(x_af);
+    
+    af::array input_batch = x_af / 100.0f;
+    af::array output_batch = net.predict(input_batch); 
         
-        Matrix output = net.predict(input);        
-
-        file << "Input: " << x << " -> " << output(0, 0) * 10000.0 << std::endl;
+    af::array final_outputs = output_batch * 10000.0f;
+    
+    int num_elements = x_af.elements();
+    std::vector<float> host_x(num_elements);
+    std::vector<float> host_out(num_elements);
+        
+    x_af.host(host_x.data());
+    final_outputs.host(host_out.data());
+    
+    for (int i = 0; i < num_elements; ++i) {
+        file << "Input: " << host_x[i] << " -> " << host_out[i] << std::endl;
     }   
     
     file.close();
 }
 
 
-int main() {    
-    std::srand(time(nullptr)); 
 
-    Network net;        
-    net_init(net);
-        
-    std::vector<double> inputs, targets;
-    for (double x = -30.0; x <= 30.0; x += 0.5) {
-        inputs.push_back(x);
-        targets.push_back(x * x);
+int main() {        
+    std::vector<float> host_inputs, host_targets;
+    for (float x = -30.0f; x <= 30.0f; x += 0.5f) {
+        host_inputs.push_back(x);
+        host_targets.push_back(x * x);
     } 
         
-    double learning_rate = 0.1;  
-    int epochs = 10000;         
+    int num_samples = host_inputs.size();
+    af::array inputs_af(1, num_samples, host_inputs.data());
+    af::array targets_af(1, num_samples, host_targets.data());
+    
+    af::array batch_inputs = inputs_af / 100.0f;
+    af::array batch_targets = targets_af / 10000.0f;
+    
+    Network net;        
+    net_init(net); 
         
+    float learning_rate = 0.1f;  
+    int epochs = 10000;         
+            
+    net_train(net, epochs, learning_rate, batch_inputs, batch_targets);
     
-    net_train(net, epochs, learning_rate, inputs, targets);
-  
-
     predict_save(net);
-    
     
     return 0;
 }

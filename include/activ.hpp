@@ -1,106 +1,121 @@
 #pragma once
 
-#include <cmath>
+#include <arrayfire.h> 
 
 class Activation {
-    public:
-        virtual double forward(double x) = 0;
-        virtual double backward(double x) = 0;
+    public:        
+        virtual af::array forward(const af::array& x) = 0;
+        virtual af::array backward(const af::array& x) = 0;
         virtual ~Activation() = default;
 };
 
 
 class Sigmoid : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class ReLU : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class LeakyReLU : public Activation {
     private:
-        double alpha;
+        float alpha; 
     public:
-        LeakyReLU(double a = 0.01);
-        double forward(double x) override;
-        double backward(double x) override;
+        LeakyReLU(float a = 0.01f);
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class Linear : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class TanH : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class SELU : public Activation {
     private:
-        double lambda;
-        double alpha;
-    public:
-        SELU(double l = 1.0507009873554804934193349852946, double a = 1.6732632423543772848170429916717);
-        double forward(double x) override;
-        double backward(double x) override;
+        float lambda;
+        float alpha;
+    public:        
+        SELU(float l = 1.050701f, float a = 1.673263f);
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class Swish : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class Mish : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class LSLU : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
+};
+
+class SLSLU : public Activation {
+    public:
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class GELU : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class ELU : public Activation {
     private:
-        double alpha;
+        float alpha;
     public:
-        ELU(double a = 1.0);
-        double forward(double x) override;
-        double backward(double x) override;
+        ELU(float a = 1.0f);
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class Softplus : public Activation {
     public:
-        double forward(double x) override;
-        double backward(double x) override;
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
 class APLU : public Activation {
     private:
-        double alpha;  
-        double lambda; 
-        double beta;   
-        double gamma;  
+        float alpha;  
+        float lambda; 
+        float beta;   
+        float gamma;  
     public:
-        APLU(double a = 0.05, double l = 1.0, double b = 0.2, double g = 1.0);
-        double forward(double x) override;
-        double backward(double x) override;
+        APLU(float a = 0.05f, float l = 1.0f, float b = 0.2f, float g = 1.0f);
+        af::array forward(const af::array& x) override;
+        af::array backward(const af::array& x) override;
 };
 
+class ELUSwish : public Activation {
+private:
+    float alpha;
+    float beta;
+public:
+    ELUSwish(float a = 1.0f, float b = 1.0f);
+    af::array forward(const af::array& x) override;
+    af::array backward(const af::array& x) override;
+};

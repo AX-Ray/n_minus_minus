@@ -1,25 +1,14 @@
 #include "../include/matrix.hpp"
 
-Matrix::Matrix(int r, int c) : rows(r), cols(c), data(r * c, 0.0) {}
+Matrix::Matrix(int r, int c) : rows(r), cols(c), data(af::constant(0.0f, r, c, f32)) {}
 
-double& Matrix::operator()(int r, int c) {
-    return data[r * cols + c];
+Matrix::Matrix(int r, int c, af::array af_data) : rows(r), cols(c), data(af_data) {}
+
+Matrix Matrix::operator*(const Matrix& other) const {    
+    af::array result_data = af::matmul(this->data, other.data);    
+    return Matrix(rows, other.cols, result_data);
 }
 
-const double& Matrix::operator()(int r, int c) const {
-    return data[r * cols + c];
-}
-
-Matrix Matrix::operator*(const Matrix& other) const {
-    Matrix result(rows, other.cols);
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < other.cols; ++j) {
-            double sum = 0.0;
-            for (int k = 0; k < cols; ++k) {
-                sum += (*this)(i, k) * other(k, j);                        
-            }
-            result(i, j) = sum;
-        }
-    }
-    return result;
+float Matrix::operator()(int r, int c) const {    
+    return data(r, c).scalar<float>();
 }

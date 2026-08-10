@@ -8,50 +8,42 @@ void Network::add_layer(std::unique_ptr<Layer> layer) {
     layers.push_back(std::move(layer));
 }
 
-Matrix Network::forward(const Matrix& input) {
-    Matrix current = input;
-    
+af::array Network::forward(const af::array& input) {
+    af::array current = input;
     for (auto& layer : layers) {
         current = layer->forward(current);
     }
-    
     return current;
 }
 
-void Network::backward(const Matrix& grad_output, double learning_rate) {
-    Matrix current_grad = grad_output;
-        
-    for (int i = layers.size() - 1; i >= 0; --i) {
+void Network::backward(const af::array& grad_output, float learning_rate) {
+    af::array current_grad = grad_output;
+    for (int i = static_cast<int>(layers.size()) - 1; i >= 0; --i) {
         current_grad = layers[i]->backward(current_grad, learning_rate);
     }
 }
 
-double Network::train(const Matrix& input, const Matrix& target, double learning_rate) {    
-    Matrix output = forward(input);
+float Network::train(const af::array& input, const af::array& target, float learning_rate) {        
+    af::array output = forward(input);
+                
+    float loss = mse_loss(output, target);
             
-    double loss = mse_loss(output, target);
-        
-    Matrix grad_output(output.rows, output.cols);
-    for (int i = 0; i < output.rows; ++i) {
-        grad_output(i, 0) = 2.0 * (output(i, 0) - target(i, 0));
-    }
-        
+    float batch_size = static_cast<float>(input.dims(1)); 
+    af::array grad_output = (2.0f * (output - target)) / batch_size;
+            
     backward(grad_output, learning_rate);
     
     return loss;
 }
 
-Matrix Network::predict(const Matrix& input) {
+af::array Network::predict(const af::array& input) {
     return forward(input);
 }
 
-double Network::mse_loss(const Matrix& output, const Matrix& target) {
-    double sum = 0.0;
-    for (int i = 0; i < output.rows; ++i) {
-        double diff = output(i, 0) - target(i, 0);
-        sum += diff * diff;
-    }
-    return sum / output.rows;
+float Network::mse_loss(const af::array& output, const af::array& target) {    
+    af::array diff = output - target;
+        
+    return af::mean<float>(diff * diff);
 }
 
 void Network::save(const std::string& filename) const {
@@ -65,20 +57,27 @@ void Network::save(const std::string& filename) const {
         
     for (size_t i = 0; i < layers.size(); ++i) {
         const auto& layer = layers[i];
-                
         file << layer->get_input_size() << " " << layer->get_output_size() << std::endl;
-                
-        const Matrix& weights = layer->get_weights();
-        for (int r = 0; r < weights.rows; ++r) {
-            for (int c = 0; c < weights.cols; ++c) {
-                file << weights(r, c) << " ";
+                        
+        af::array weights = layer->get_weights();
+        int w_rows = weights.dims(0);
+        int w_cols = weights.dims(1);
+        std::vector<float> h_weights(weights.elements());
+        weights.host(h_weights.data()); 
+                        
+        for (int r = 0; r < w_rows; ++r) {
+            for (int c = 0; c < w_cols; ++c) {                
+                file << h_weights[c * w_rows + r] << " ";
             }
             file << std::endl;
         }
+                        
+        af::array biases = layer->get_biases();
+        std::vector<float> h_biases(biases.elements());
+        biases.host(h_biases.data());
                 
-        const Matrix& biases = layer->get_biases();
-        for (int r = 0; r < biases.rows; ++r) {
-            file << biases(r, 0) << " ";
+        for (size_t b = 0; b < h_biases.size(); ++b) {
+            file << h_biases[b] << " ";
         }
         file << std::endl;
     }
@@ -113,19 +112,20 @@ void Network::load(const std::string& filename) {
             file.close();
             return;
         }
-                
-        Matrix weights(out_size, in_size);
-        Matrix biases(out_size, 1);
-                
-        for (int r = 0; r < weights.rows; ++r) {
-            for (int c = 0; c < weights.cols; ++c) {
-                file >> weights(r, c);
+                        
+        std::vector<float> h_weights(out_size * in_size);
+        for (int r = 0; r < out_size; ++r) {
+            for (int c = 0; c < in_size; ++c) {                
+                file >> h_weights[c * out_size + r];
             }
-        }
+        }        
+        af::array weights(out_size, in_size, h_weights.data());
                 
-        for (int r = 0; r < biases.rows; ++r) {
-            file >> biases(r, 0);
+        std::vector<float> h_biases(out_size);
+        for (int r = 0; r < out_size; ++r) {
+            file >> h_biases[r];
         }
+        af::array biases(out_size, 1, h_biases.data());
                 
         layers[i]->set_weights(weights);
         layers[i]->set_biases(biases);
