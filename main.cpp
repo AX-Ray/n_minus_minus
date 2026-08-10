@@ -12,7 +12,9 @@ void net_train(Network& net, int epochs, float l_r, const af::array& inputs, con
     for (int epoch = 0; epoch <= epochs; ++epoch) {
 
         if (epoch > 0 && epoch % 10000 == 0) {
-            l_r /= 4.0f;            
+            std::cout << "old lr: " << l_r;
+            l_r /= 4.0f;                 
+            std::cout << "; new lr: " << l_r << std::endl;       
         }
                 
         float loss = net.train(inputs, targets, l_r);
@@ -25,8 +27,8 @@ void net_train(Network& net, int epochs, float l_r, const af::array& inputs, con
 
 
 void net_init(Network& net) { 
-    net.add_layer(std::make_unique<Layer>(1, 20, std::make_unique<ReLU>()));       
-    net.add_layer(std::make_unique<Layer>(20, 20, std::make_unique<LeakyReLU>(0.01)));       
+    net.add_layer(std::make_unique<Layer>(1, 20, std::make_unique<LSLU>()));       
+    net.add_layer(std::make_unique<Layer>(20, 20, std::make_unique<LSLU>()));       
     net.add_layer(std::make_unique<Layer>(20, 1, std::make_unique<Linear>()));       
 }
 
@@ -58,6 +60,13 @@ void predict_save(Network& net, const std::string& filename = "output/predict.tx
 
 
 int main() {        
+    try {        
+        af::info(); 
+    } catch (const af::exception& e) {
+        std::cerr << "ArrayFire error " << e.what() << std::endl;        
+        return 1;
+    }
+
     std::vector<float> host_inputs, host_targets;
     for (float x = -30.0f; x <= 30.0f; x += 0.5f) {
         host_inputs.push_back(x);
@@ -75,7 +84,7 @@ int main() {
     net_init(net); 
         
     float learning_rate = 0.1f;  
-    int epochs = 10000;         
+    int epochs = 30000;         
             
     net_train(net, epochs, learning_rate, batch_inputs, batch_targets);
     

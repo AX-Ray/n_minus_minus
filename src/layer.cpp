@@ -16,8 +16,10 @@ void Layer::initialize_weights() {
 af::array Layer::forward(const af::array& input) {    
     input_cache = input;
     
-    // Z = W * X + B
-    linear_cache = af::matmul(weights, input_cache) + biases;
+    // Z = W * X + B    
+    int current_batch_size = input_cache.dims(1);    
+    linear_cache = af::matmul(weights, input_cache) + af::tile(biases, 1, current_batch_size);
+
         
     output_cache = activation->forward(linear_cache);
     
