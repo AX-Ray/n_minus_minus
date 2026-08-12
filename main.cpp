@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstdlib> 
 #include <ctime> 
+#include <algorithm>
 
 void net_train(Network& net, int epochs, double l_r, const std::vector<double>& inputs, const std::vector<double>& targets) {
     double prev_total_loss = 999999.0; 
@@ -26,7 +27,8 @@ void net_train(Network& net, int epochs, double l_r, const std::vector<double>& 
         
         double current_epoch_loss = total_loss / inputs.size();
 
-        if (epoch > 0 && epoch % 100 == 0) {               
+        if (epoch > 0 && epoch % 100 == 0) {   
+                        
             std::ofstream file("logs/log.txt", std::ios::app); 
             
             if (file.is_open()) {
@@ -38,10 +40,11 @@ void net_train(Network& net, int epochs, double l_r, const std::vector<double>& 
         }
         
         if (epoch > 0 && epoch % 1000 == 0) {            
-            if (current_epoch_loss >= prev_total_loss) {
-                l_r *= 0.75;                 
-            } else {
-                l_r *= 1.1; 
+            double adapt = prev_total_loss / current_epoch_loss;
+            if (current_epoch_loss >= prev_total_loss) {                
+                l_r *= std::min(adapt, 0.8);            
+            } else {                      
+                l_r *= std::clamp(adapt, 1.1, 1.3); 
             }
             prev_total_loss = current_epoch_loss; 
         }
@@ -78,6 +81,9 @@ void predict_save(Network& net, const std::string& filename = "output/predict.tx
 int main() {    
     std::srand(time(nullptr)); 
 
+    std::ofstream clear_file("logs/log.txt", std::ios::trunc);
+    clear_file.close(); 
+
     Network net;        
     net_init(net);
         
@@ -87,7 +93,7 @@ int main() {
         targets.push_back(x * x);
     } 
         
-    double learning_rate = 0.1;  
+    double learning_rate = 0.2;  
     int epochs = 10000;         
         
     
