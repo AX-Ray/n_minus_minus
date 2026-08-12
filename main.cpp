@@ -25,6 +25,17 @@ void net_train(Network& net, int epochs, double l_r, const std::vector<double>& 
         }  
         
         double current_epoch_loss = total_loss / inputs.size();
+
+        if (epoch > 0 && epoch % 100 == 0) {               
+            std::ofstream file("logs/log.txt", std::ios::app); 
+            
+            if (file.is_open()) {
+                file << current_epoch_loss << std::endl;
+                file.close(); 
+            } else {
+                std::cerr << "Cannot open log.txt" << std::endl;
+            }
+        }
         
         if (epoch > 0 && epoch % 1000 == 0) {            
             if (current_epoch_loss >= prev_total_loss) {

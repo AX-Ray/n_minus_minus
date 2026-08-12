@@ -1,6 +1,9 @@
 models/
 .vscode/
 dataset/
-python/
+python/*
+!python/.gitkeep
 build/
 output/predict.txt
+logs/*
+!logs/.gitkeep
