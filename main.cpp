@@ -32,7 +32,7 @@ void net_train(Network& net, int epochs, double l_r, const std::vector<double>& 
             std::ofstream file("logs/log.txt", std::ios::app); 
             
             if (file.is_open()) {
-                file << current_epoch_loss << std::endl;
+                file << current_epoch_loss << " " << l_r <<  std::endl;
                 file.close(); 
             } else {
                 std::cerr << "Cannot open log.txt" << std::endl;
