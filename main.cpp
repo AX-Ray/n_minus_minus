@@ -39,7 +39,7 @@ void net_train(Network& net, int epochs, double l_r, const std::vector<double>& 
             }
         }
         
-        if (epoch > 0 && epoch % 5 == 0) {            
+        if (epoch > 0 && epoch % 500 == 0) {            
             double adapt = prev_total_loss / current_epoch_loss;
             if (current_epoch_loss >= prev_total_loss) {                
                 l_r *= std::min(adapt, 0.85);            
