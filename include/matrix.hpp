@@ -1,4 +1,5 @@
 #pragma once
+
 #include <arrayfire.h>
 
 class Matrix {

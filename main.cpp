@@ -19,7 +19,7 @@ void net_train(Network& net, int epochs, float l_r, const af::array& inputs, con
                 
         float loss = net.train(inputs, targets, l_r);
         
-        if (epoch % 1000 == 0) {
+        if (epoch % 10 == 0) {
             std::cout << "Epoch " << epoch << ", loss: " << loss << std::endl;
         }
     }
@@ -60,7 +60,7 @@ void predict_save(Network& net, const std::string& filename = "output/predict.tx
 
 
 int main() {        
-    try {        
+    try {                
         af::info(); 
     } catch (const af::exception& e) {
         std::cerr << "ArrayFire error " << e.what() << std::endl;        
@@ -84,7 +84,7 @@ int main() {
     net_init(net); 
         
     float learning_rate = 0.1f;  
-    int epochs = 30000;         
+    int epochs = 2000;         
             
     net_train(net, epochs, learning_rate, batch_inputs, batch_targets);
     
