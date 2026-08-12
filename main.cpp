@@ -39,12 +39,12 @@ void net_train(Network& net, int epochs, double l_r, const std::vector<double>& 
             }
         }
         
-        if (epoch > 0 && epoch % 1000 == 0) {            
+        if (epoch > 0 && epoch % 5 == 0) {            
             double adapt = prev_total_loss / current_epoch_loss;
             if (current_epoch_loss >= prev_total_loss) {                
-                l_r *= std::min(adapt, 0.8);            
+                l_r *= std::min(adapt, 0.85);            
             } else {                      
-                l_r *= std::clamp(adapt, 1.1, 1.3); 
+                l_r *= std::clamp(adapt, 1.1, 1.35); 
             }
             prev_total_loss = current_epoch_loss; 
         }
@@ -94,7 +94,7 @@ int main() {
     } 
         
     double learning_rate = 0.2;  
-    int epochs = 10000;         
+    int epochs = 30000;         
         
     
     net_train(net, epochs, learning_rate, inputs, targets);
