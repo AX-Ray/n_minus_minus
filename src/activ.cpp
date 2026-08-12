@@ -5,7 +5,8 @@ double Sigmoid::forward(double x) {
 }
 
 double Sigmoid::backward(double x) {
-    return x * (1.0 - x);
+    double s = 1.0 / (1.0 + std::exp(-x));
+    return s * (1.0 - s);
 }
 
 
@@ -42,8 +43,9 @@ double TanH::forward(double x) {
     return std::tanh(x);
 }
 
-double TanH::backward(double x) {    
-    return 1.0 - x * x;
+double TanH::backward(double x) {
+    double t = std::tanh(x);
+    return 1.0 - t * t;
 }
 
 
@@ -53,8 +55,9 @@ double SELU::forward(double x) {
     return x >= 0 ? lambda * x : lambda * alpha * (std::exp(x) - 1.0);
 }
 
-double SELU::backward(double x) {    
-    return x >= 0 ? lambda : x + lambda * alpha;
+double SELU::backward(double x) {
+    if (x >= 0) return lambda;
+    return lambda * alpha * std::exp(x);
 }
 
 

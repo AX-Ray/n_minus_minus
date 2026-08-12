@@ -18,7 +18,7 @@ class Network {
                 
         void backward(const Matrix& grad_output, double learning_rate);
                 
-        double train(const Matrix& input, const Matrix& target, double learning_rate);
+        double train(const Matrix& input, const Matrix& target, double learning_rate);        
                 
         Matrix predict(const Matrix& input);
                 

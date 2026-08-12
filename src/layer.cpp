@@ -49,7 +49,7 @@ Matrix Layer::forward(const Matrix& input) {
 Matrix Layer::backward(const Matrix& grad_output, double learning_rate) {    
     Matrix grad_linear(output_size, 1);
     for (int i = 0; i < output_size; ++i) {
-        double da_dz = activation->backward(output_cache(i, 0));
+        double da_dz = activation->backward(linear_cache(i, 0));
         grad_linear(i, 0) = grad_output(i, 0) * da_dz;
     }
         

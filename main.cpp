@@ -7,15 +7,14 @@
 #include <cmath>
 #include <cstdlib> 
 #include <ctime> 
+#include <algorithm>
 
 void net_train(Network& net, int epochs, double l_r, const std::vector<double>& inputs, const std::vector<double>& targets) {
+    double prev_total_loss = 999999.0; 
+
     for (int epoch = 0; epoch <= epochs; ++epoch) {
         double total_loss = 0.0;
-
-        if (epoch > 0 && epoch % 10000 == 0) { // Changing learning rate during trainig
-            l_r /= 4.0;            
-        }
-        
+                
         for (int i = 0; i < inputs.size(); i++) {
             Matrix input(1, 1);
             input(0, 0) = inputs[i] / 100.0; 
@@ -26,15 +25,40 @@ void net_train(Network& net, int epochs, double l_r, const std::vector<double>& 
             total_loss += net.train(input, target, l_r);
         }  
         
+        double current_epoch_loss = total_loss / inputs.size();
+
+        if (epoch > 0 && epoch % 100 == 0) {   
+                        
+            std::ofstream file("logs/log.txt", std::ios::app); 
+            
+            if (file.is_open()) {
+                file << current_epoch_loss << " " << l_r <<  std::endl;
+                file.close(); 
+            } else {
+                std::cerr << "Cannot open log.txt" << std::endl;
+            }
+        }
+        
+        if (epoch > 0 && epoch % 1000 == 0) {            
+            double adapt = prev_total_loss / current_epoch_loss;
+            if (current_epoch_loss >= prev_total_loss) {                
+                l_r *= std::min(adapt, 0.8);            
+            } else {                      
+                l_r *= std::clamp(adapt, 1.1, 1.3); 
+            }
+            prev_total_loss = current_epoch_loss; 
+        }
+        
         if (epoch % 1000 == 0) {
-            std::cout << "Epoch " << epoch << ", loss: " << total_loss / inputs.size() << std::endl;
+            std::cout << "Epoch " << epoch << ", loss: " << current_epoch_loss << " (LR: " << l_r << ")" << std::endl;
         }
     }
 }
 
+
 void net_init(Network& net) { 
-    net.add_layer(std::make_unique<Layer>(1, 20, std::make_unique<ReLU>()));       
-    net.add_layer(std::make_unique<Layer>(20, 20, std::make_unique<LeakyReLU>(0.01)));       
+    net.add_layer(std::make_unique<Layer>(1, 20, std::make_unique<LSLU>()));       
+    net.add_layer(std::make_unique<Layer>(20, 20, std::make_unique<LSLU>()));       
     net.add_layer(std::make_unique<Layer>(20, 1, std::make_unique<Linear>()));       
 }
 
@@ -57,6 +81,9 @@ void predict_save(Network& net, const std::string& filename = "output/predict.tx
 int main() {    
     std::srand(time(nullptr)); 
 
+    std::ofstream clear_file("logs/log.txt", std::ios::trunc);
+    clear_file.close(); 
+
     Network net;        
     net_init(net);
         
@@ -66,7 +93,7 @@ int main() {
         targets.push_back(x * x);
     } 
         
-    double learning_rate = 0.1;  
+    double learning_rate = 0.2;  
     int epochs = 10000;         
         
     

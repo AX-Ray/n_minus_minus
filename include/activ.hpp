@@ -6,14 +6,14 @@ class Activation {
     public:
         virtual double forward(double x) = 0;
         virtual double backward(double x) = 0;
-        virtual ~Activation() = default;
+        virtual ~Activation() = default;        
 };
 
 
 class Sigmoid : public Activation {
     public:
         double forward(double x) override;
-        double backward(double x) override;
+        double backward(double x) override;        
 };
 
 class ReLU : public Activation {

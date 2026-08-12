@@ -5,12 +5,12 @@
 class Matrix {
     public:
         int rows, cols;
-        std::vector<double> data;
+        std::vector<float> data;
         
         Matrix(int r, int c);
 
-        double& operator()(int r, int c);
-        const double& operator()(int r, int c) const;
+        float& operator()(int r, int c);
+        const float& operator()(int r, int c) const;
 
         Matrix operator*(const Matrix& other) const;        
 };
