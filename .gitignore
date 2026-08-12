@@ -3,4 +3,4 @@ models/
 dataset/
 python/
 build/
-output/
+output/predict.txt
