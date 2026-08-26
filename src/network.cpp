@@ -54,6 +54,17 @@ double Network::mse_loss(const Matrix& output, const Matrix& target) {
     return sum / output.rows;
 }
 
+void Network::copy_weights_from(const Network& other) {
+    if (layers.size() != other.layers.size()) {
+        std::cerr << "Layer count mismatch\n";
+        return;
+    }
+    for (size_t i = 0; i < layers.size(); ++i) {
+        layers[i]->set_weights(other.layers[i]->get_weights());
+        layers[i]->set_biases(other.layers[i]->get_biases());
+    }
+}
+
 void Network::save(const std::string& filename) const {
     std::ofstream file(filename);
     if (!file.is_open()) {
