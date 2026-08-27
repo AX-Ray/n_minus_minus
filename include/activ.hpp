@@ -119,3 +119,25 @@ class APLU : public Activation {
         std::string get_name() const override; 
 };
 
+class GBA : public Activation {
+    private:
+        double epsilon;
+        double beta;
+        double amplitude;
+        double center;
+        double tanh_center;
+    
+        double sigmoid(double x) const;
+        double softplus_centered(double x) const;
+        
+    public:
+        GBA(double eps = 0.05, double b = 1.5, double amp = 0.25, double c = 2.0);
+        double forward(double x) override;
+        double backward(double x) override;
+        std::string get_name() const override;
+                
+        double get_epsilon() const { return epsilon; }
+        double get_beta() const { return beta; }
+        double get_amplitude() const { return amplitude; }
+        double get_center() const { return center; }
+};
