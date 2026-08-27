@@ -12,7 +12,7 @@ const float& Matrix::operator()(int r, int c) const {
 
 Matrix Matrix::operator*(const Matrix& other) const {
     Matrix result(rows, other.cols);
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < rows; ++i) {        
         for (int j = 0; j < other.cols; ++j) {
             double sum = 0.0;                     
