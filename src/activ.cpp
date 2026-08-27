@@ -160,3 +160,57 @@ double APLU::backward(double x) {
     return d_base + d_tanh;
 }
 
+
+// activ.cpp - добавьте в конец файла
+
+std::string Sigmoid::get_name() const {
+    return "Sigmoid";
+}
+
+std::string ReLU::get_name() const {
+    return "ReLU";
+}
+
+std::string LeakyReLU::get_name() const {
+    return "LeakyReLU";
+}
+
+std::string Linear::get_name() const {
+    return "Linear";
+}
+
+std::string TanH::get_name() const {
+    return "TanH";
+}
+
+std::string SELU::get_name() const {
+    return "SELU";
+}
+
+std::string Swish::get_name() const {
+    return "Swish";
+}
+
+std::string Mish::get_name() const {
+    return "Mish";
+}
+
+std::string LSLU::get_name() const {
+    return "LSLU";
+}
+
+std::string GELU::get_name() const {
+    return "GELU";
+}
+
+std::string ELU::get_name() const {
+    return "ELU";
+}
+
+std::string Softplus::get_name() const {
+    return "Softplus";
+}
+
+std::string APLU::get_name() const {
+    return "APLU";
+}

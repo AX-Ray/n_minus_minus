@@ -1,25 +1,29 @@
 #pragma once
 
 #include <cmath>
+#include <string>
 
 class Activation {
     public:
         virtual double forward(double x) = 0;
         virtual double backward(double x) = 0;
-        virtual ~Activation() = default;        
+        virtual ~Activation() = default;  
+        virtual std::string get_name() const = 0;      
 };
 
 
 class Sigmoid : public Activation {
     public:
         double forward(double x) override;
-        double backward(double x) override;        
+        double backward(double x) override;  
+        std::string get_name() const override;       
 };
 
 class ReLU : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class LeakyReLU : public Activation {
@@ -29,18 +33,21 @@ class LeakyReLU : public Activation {
         LeakyReLU(double a = 0.01);
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class Linear : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class TanH : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class SELU : public Activation {
@@ -51,30 +58,35 @@ class SELU : public Activation {
         SELU(double l = 1.0507009873554804934193349852946, double a = 1.6732632423543772848170429916717);
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class Swish : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class Mish : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class LSLU : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class GELU : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class ELU : public Activation {
@@ -84,12 +96,14 @@ class ELU : public Activation {
         ELU(double a = 1.0);
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class Softplus : public Activation {
     public:
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
 class APLU : public Activation {
@@ -102,5 +116,6 @@ class APLU : public Activation {
         APLU(double a = 0.05, double l = 1.0, double b = 0.2, double g = 1.0);
         double forward(double x) override;
         double backward(double x) override;
+        std::string get_name() const override; 
 };
 
