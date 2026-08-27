@@ -22,7 +22,13 @@ public:
     void update_target_network();  
     void decay_epsilon();
 
-    double get_epsilon() const;
+    double get_epsilon() const {return epsilon; }
+    double get_gamma() const { return gamma; }
+    double get_learning_rate() const { return learning_rate; }
+    
+    void set_epsilon(double eps) { epsilon = eps; }
+    void set_gamma(double g) { gamma = g; }
+    void set_learning_rate(double lr) { learning_rate = lr; }
 
     int best_action(const Matrix& state);  
 };

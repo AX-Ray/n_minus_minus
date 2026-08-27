@@ -3,7 +3,7 @@
 #include <cmath>
 #include <iostream>
 
-DQNAgent::DQNAgent(int state_dim, int action_size, double lr, double gamma,double eps, double eps_min, double eps_decay)
+DQNAgent::DQNAgent(int state_dim, int action_size, double lr, double gamma, double eps, double eps_min, double eps_decay)
     : gamma(gamma), epsilon(eps), epsilon_min(eps_min),
       epsilon_decay(eps_decay), learning_rate(lr),
       action_size(action_size), state_dim(state_dim),
@@ -31,7 +31,9 @@ int DQNAgent::act(const Matrix& state) {
         Matrix q_values = q_network.forward(state);        
         int best = 0;
         for (int i = 1; i < q_values.rows; ++i) {
-            if (q_values(i, 0) > q_values(best, 0)) best = i;
+            if (q_values(i, 0) > q_values(best, 0)) {
+                best = i;
+            }
         }
         return best;
     }
@@ -77,10 +79,6 @@ void DQNAgent::decay_epsilon() {
         epsilon *= epsilon_decay;
         if (epsilon < epsilon_min) epsilon = epsilon_min;
     }
-}
-
-double DQNAgent::get_epsilon() const {
-    return epsilon;
 }
 
 int DQNAgent::best_action(const Matrix& state) {
