@@ -37,4 +37,8 @@ class Layer {
         const Matrix& get_biases() const { return biases; }
         void set_weights(const Matrix& new_weights) { weights = new_weights; }
         void set_biases(const Matrix& new_biases) { biases = new_biases; }
+        
+        std::string get_activation_name() const {
+            return activation ? activation->get_name() : "None";
+        }
 };

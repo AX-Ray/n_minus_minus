@@ -160,3 +160,102 @@ double APLU::backward(double x) {
     return d_base + d_tanh;
 }
 
+
+GBA::GBA(double eps, double b, double amp, double c) : epsilon(eps), beta(b), amplitude(amp), center(c) {
+    if (epsilon <= 0.0 || epsilon >= 1.0) {
+        throw std::invalid_argument("eps must be between 0 and 1");
+    }
+    if (beta <= 0.0) {
+        throw std::invalid_argument("beta must be >= 0");
+    }
+    if (amplitude < 0.0) {
+        throw std::invalid_argument("amplitude must be >=");
+    }    
+    tanh_center = std::tanh(center);
+}
+
+double GBA::sigmoid(double x) const {
+    return 1.0 / (1.0 + std::exp(-x));
+}
+
+double GBA::softplus_centered(double x) const {
+    return (std::log(1.0 + std::exp(beta * x)) - std::log(2.0)) / beta;
+}
+
+
+double GBA::forward(double x) const {
+    double beta_x = beta * x;
+        
+    double sp_centered = (std::log(1.0 + std::exp(beta_x)) - std::log(2.0)) / beta;
+        
+    double bridge = std::tanh(x + center) - tanh_center;
+        
+    return epsilon * x + (1.0 - epsilon) * sp_centered + amplitude * bridge;
+}
+
+double GBA::backward(double x) const {
+    double tanh_val = std::tanh(x + center);
+    double sech_squared = 1.0 - tanh_val * tanh_val;
+    
+    return epsilon + (1.0 - epsilon) * sigmoid(beta * x) + amplitude * sech_squared;
+}
+
+
+
+
+
+std::string Sigmoid::get_name() const {
+    return "Sigmoid";
+}
+
+std::string ReLU::get_name() const {
+    return "ReLU";
+}
+
+std::string LeakyReLU::get_name() const {
+    return "LeakyReLU";
+}
+
+std::string Linear::get_name() const {
+    return "Linear";
+}
+
+std::string TanH::get_name() const {
+    return "TanH";
+}
+
+std::string SELU::get_name() const {
+    return "SELU";
+}
+
+std::string Swish::get_name() const {
+    return "Swish";
+}
+
+std::string Mish::get_name() const {
+    return "Mish";
+}
+
+std::string LSLU::get_name() const {
+    return "LSLU";
+}
+
+std::string GELU::get_name() const {
+    return "GELU";
+}
+
+std::string ELU::get_name() const {
+    return "ELU";
+}
+
+std::string Softplus::get_name() const {
+    return "Softplus";
+}
+
+std::string APLU::get_name() const {
+    return "APLU";
+}
+
+std::string GBA::get_name() const {
+    return "GBA";
+}

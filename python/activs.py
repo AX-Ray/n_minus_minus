@@ -104,6 +104,19 @@ def aplu_b(x, a=0.05, l=1.0, b=0.2, g=1.0):
     d_tanh = b * g * (1.0 - t * t)
     return d_base + d_tanh
 
+def gba_f(x, eps=0.05, beta=1.5, amp=0.25, center=2.0):
+    beta_x = beta * x
+    sp_centered = (np.log(1.0 + np.exp(beta_x)) - np.log(2.0)) / beta
+    tanh_center = np.tanh(center)
+    bridge = np.tanh(x + center) - tanh_center
+    return eps * x + (1.0 - eps) * sp_centered + amp * bridge
+
+def gba_b(x, eps=0.05, beta=1.5, amp=0.25, center=2.0):
+    sig = 1.0 / (1.0 + np.exp(-beta * x))
+    tanh_val = np.tanh(x + center)
+    sech_sq = 1.0 - tanh_val * tanh_val
+    return eps + (1.0 - eps) * sig + amp * sech_sq
+
 activations = [
     ("Sigmoid", sigmoid_f, sigmoid_b, True),
     ("ReLU", relu_f, relu_b, False),
@@ -117,7 +130,8 @@ activations = [
     ("GELU", gelu_f, gelu_b, False),
     ("ELU (alpha=1.0)", elu_f, elu_b, False),
     ("Softplus", softplus_f, softplus_b, False),
-    ("APLU", aplu_f, aplu_b, False)
+    ("APLU", aplu_f, aplu_b, False),
+    ("GBA", lambda x: gba_f(x), lambda x: gba_b(x), False)
 ]
 
 plt.style.use('seaborn-v0_8-grid' if 'seaborn-v0_8-grid' in plt.style.available else 'default')
@@ -130,7 +144,7 @@ activation_chunks = list(chunk_list(activations, 3))
 num_plots = len(activation_chunks)
 
 fig1, axes1 = plt.subplots(num_plots, 1, figsize=(10, 3 * num_plots), sharex=True)
-fig1.suptitle("Функции активации: Forward pass", fontsize=16, fontweight='bold', y=0.99)
+fig1.suptitle("Activation Functions: Forward Pass", fontsize=16, fontweight='bold', y=0.99)
 
 for idx, chunk in enumerate(activation_chunks):
     ax = axes1[idx]
@@ -139,13 +153,13 @@ for idx, chunk in enumerate(activation_chunks):
     ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
     ax.axvline(0, color='black', linewidth=0.8, linestyle='--')
     ax.legend(loc="upper left")
-    ax.set_ylabel("Выход Y")
+    ax.set_ylabel("Output Y")
 
-axes1[-1].set_xlabel("Входной X")
+axes1[-1].set_xlabel("Input X")
 fig1.tight_layout()
 
 fig2, axes2 = plt.subplots(num_plots, 1, figsize=(10, 3 * num_plots), sharex=True)
-fig2.suptitle("Производные функций активации: Backward pass", fontsize=16, fontweight='bold', y=0.99)
+fig2.suptitle("Activation Function Derivatives: Backward Pass", fontsize=16, fontweight='bold', y=0.99)
 
 for idx, chunk in enumerate(activation_chunks):
     ax = axes2[idx]
@@ -158,9 +172,9 @@ for idx, chunk in enumerate(activation_chunks):
     ax.axhline(0, color='black', linewidth=0.8, linestyle='--')
     ax.axvline(0, color='black', linewidth=0.8, linestyle='--')
     ax.legend(loc="upper left")
-    ax.set_ylabel("Градиент dY/dX")
+    ax.set_ylabel("Gradient dY/dX")
 
-axes2[-1].set_xlabel("Входной X")
+axes2[-1].set_xlabel("Input X")
 fig2.tight_layout()
 
 plt.show()

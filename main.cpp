@@ -39,7 +39,7 @@ void net_train(Network& net, int epochs, double l_r, const std::vector<double>& 
             }
         }
         
-        if (epoch > 0 && epoch % 500 == 0) {     //   Вот это настроить     
+        if (epoch > 0 && epoch % 500 == 0) {    
             double adapt = prev_total_loss / current_epoch_loss;
             if (current_epoch_loss >= prev_total_loss) {                
                 l_r *= std::min(adapt, 0.85);            
@@ -86,6 +86,7 @@ int main() {
 
     Network net;        
     net_init(net);
+    net.load("models/model.txt");
         
     std::vector<double> inputs, targets;
     for (double x = -30.0; x <= 30.0; x += 0.5) {
@@ -94,13 +95,15 @@ int main() {
     } 
         
     double learning_rate = 0.2;  
-    int epochs = 30000;         
+    int epochs = 5000;         
         
     
     net_train(net, epochs, learning_rate, inputs, targets);
   
 
     predict_save(net);
+
+    net.save("models/model.txt");
     
     
     return 0;
