@@ -1,4 +1,5 @@
 #include "../include/rl_agent.hpp"
+#include "../include/utils.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -91,6 +92,26 @@ int DQNAgent::best_action(const Matrix& state) {
     }
     return best;
 }   
+
+void DQNAgent::build_architecture(const std::vector<std::pair<int, std::string>>& layers) {    
+    int current_dim = state_dim;
+    
+    for (const auto& [size, activation_name] : layers) {
+        auto act1 = create_activation(activation_name);
+        auto act2 = create_activation(activation_name);
+        
+        q_network.add_layer(
+            std::make_unique<Layer>(current_dim, size, std::move(act1))
+        );
+        target_network.add_layer(
+            std::make_unique<Layer>(current_dim, size, std::move(act2))
+        );
+        
+        current_dim = size;
+    }        
+    
+    update_target_network();
+}
 
 void DQNAgent::save(const std::string& filename) const {
     std::ofstream file(filename);

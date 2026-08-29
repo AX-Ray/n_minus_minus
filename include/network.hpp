@@ -33,4 +33,6 @@ class Network {
         
         void save(const std::string& filename) const;
         void load(const std::string& filename);
+
+        void clear() { layers.clear(); }
 };
