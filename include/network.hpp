@@ -27,6 +27,9 @@ class Network {
         size_t get_layer_count() const { return layers.size(); }  
         
         void copy_weights_from(const Network& other);
+
+        void save(std::ostream& os) const;  
+        void load(std::istream& is);  
         
         void save(const std::string& filename) const;
         void load(const std::string& filename);
