@@ -101,22 +101,14 @@ Matrix get_lander_matrix(Lander& lander) {
 
 
 
-void train_dqn(DQNAgent& agent, int episodes, double initial_lr, double gamma, 
-               double eps_start, double eps_min, double eps_decay) {
+void train_dqn(DQNAgent& agent, int episodes, double initial_lr, double gamma, double eps_start, double eps_min, double eps_decay) {
     
     double lr = initial_lr;
     double prev_avg_reward = -1000.0;
     const int BATCH_SIZE = 64;
     const int TARGET_UPDATE = 10;
     const int LOG_INTERVAL = 1;
-    const int MAX_STEPS = 2000;
-    
-    std::ofstream log_file("../../logs/lunar_training.csv");
-    if (!log_file.is_open()) {
-        std::cerr << "Cannot open logs/lunar_training.csv" << std::endl;
-        return;
-    }
-    log_file << "Episode,AvgReward,Epsilon,Steps,LR\n";
+    const int MAX_STEPS = 2000;        
 
     std::vector<double> rewards_history;
 
@@ -179,28 +171,18 @@ void train_dqn(DQNAgent& agent, int episodes, double initial_lr, double gamma,
                 prev_avg_reward = avg_reward;
             }
 
-            std::cout << "Episode " << std::setw(4) << (episode + 1) 
-                      << "/" << episodes
+            std::cout << "Episode " << std::setw(4) << (episode + 1) << "/" << episodes
                       << " | AvgReward: " << std::fixed << std::setprecision(2) << avg_reward
                       << " | Epsilon: " << std::setprecision(3) << agent.get_epsilon()
                       << " | Steps: " << steps
                       << " | LR: " << std::scientific << std::setprecision(4) << lr << std::endl;
-
-            log_file << episode + 1 << ","
-                     << avg_reward << ","
-                     << agent.get_epsilon() << ","
-                     << steps << ","
-                     << lr << "\n";
-            log_file.flush();
+           
         } 
         if ((episode + 1) % LOG_INTERVAL == 75) {
             agent.decay_epsilon();
         }       
     }
 
-    
-
-    log_file.close();
     std::cout << std::endl << "Training complete" << std::endl;
 }
 
@@ -219,8 +201,7 @@ int main() {
     const double EPSILON_DECAY = 0.99999;
     const int EPISODES = 200;
 
-    DQNAgent agent(STATE_DIM, ACTION_SIZE, LEARNING_RATE, GAMMA, 
-                   EPSILON_START, EPSILON_MIN, EPSILON_DECAY);
+    DQNAgent agent(STATE_DIM, ACTION_SIZE, LEARNING_RATE, GAMMA, EPSILON_START, EPSILON_MIN, EPSILON_DECAY);
     
     agent.build_architecture({        
         {128, "ReLU"},
@@ -231,10 +212,7 @@ int main() {
     std::cout << "Agent created." << std::endl;
     std::cout << "Training DQN agent on Lunar Lander..." << std::endl;
 
-    train_dqn(agent, EPISODES, LEARNING_RATE, GAMMA, 
-              EPSILON_START, EPSILON_MIN, EPSILON_DECAY);
-
-    agent.save("../../models/lunar_model.txt");    
+    train_dqn(agent, EPISODES, LEARNING_RATE, GAMMA, EPSILON_START, EPSILON_MIN, EPSILON_DECAY);      
 
     std::cout << std::endl << " Testing" << std::endl;
     Lander test_lander = reset();
@@ -254,18 +232,19 @@ int main() {
         test_reward += reward;
         test_steps++;
 
-        std::cout << "Step " << std::setw(3) << test_steps 
-                  << " | x: " << std::fixed << std::setprecision(3) << test_lander.x 
+        std::cout << "Step " << std::setw(3) << test_steps << " | x: " << std::fixed << std::setprecision(3) << test_lander.x 
                   << " y: " << test_lander.y
                   << " vy: " << test_lander.vy
                   << " theta: " << test_lander.theta
                   << " reward: " << reward << std::endl;
     }
 
-    std::cout << std::endl << "Test finished. Total reward: " << test_reward 
-              << ", steps: " << test_steps 
+    std::cout << std::endl << "Test finished. Total reward: " << test_reward << ", steps: " << test_steps 
               << ", success: " << (test_done && test_lander.y == 0 && std::abs(test_lander.vy) <= LANDING_SPEED ? "YES" : "NO") 
               << std::endl;
+
+    std::cin.get(); 
+    std::cin.get(); 
 
     return 0;
 }
