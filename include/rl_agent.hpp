@@ -33,6 +33,7 @@ public:
     const Network& get_q_network() const { return q_network; }
     Network& get_target_network() { return target_network; }
     const Network& get_target_network() const { return target_network; }
+    size_t get_memory_size() const { return memory.size(); }
     
     void set_epsilon(double eps) { epsilon = eps; }
     void set_gamma(double g) { gamma = g; }

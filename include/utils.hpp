@@ -1,7 +1,8 @@
 #include "activ.hpp"
 #include <vector>
+#include <stdexcept>
 
-std::unique_ptr<Activation> create_activation(const std::string& name) {
+inline std::unique_ptr<Activation> create_activation(const std::string& name) {
         if (name == "Sigmoid") return std::make_unique<Sigmoid>();
         if (name == "ReLU") return std::make_unique<ReLU>();
         if (name == "LeakyReLU") return std::make_unique<LeakyReLU>();
