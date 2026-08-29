@@ -1,4 +1,5 @@
 #include "../include/rl_agent.hpp"
+#include "../include/utils.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -9,17 +10,7 @@ DQNAgent::DQNAgent(int state_dim, int action_size, double lr, double gamma, doub
     : gamma(gamma), epsilon(eps), epsilon_min(eps_min),
       epsilon_decay(eps_decay), learning_rate(lr),
       action_size(action_size), state_dim(state_dim),
-      memory(10000)  
-{    
-    q_network.add_layer(std::make_unique<Layer>(state_dim, 24, std::make_unique<ReLU>()));
-    q_network.add_layer(std::make_unique<Layer>(24, 24, std::make_unique<ReLU>()));
-    q_network.add_layer(std::make_unique<Layer>(24, action_size, std::make_unique<Linear>()));
-    
-    target_network.add_layer(std::make_unique<Layer>(state_dim, 24, std::make_unique<ReLU>()));
-    target_network.add_layer(std::make_unique<Layer>(24, 24, std::make_unique<ReLU>()));
-    target_network.add_layer(std::make_unique<Layer>(24, action_size, std::make_unique<Linear>()));
-    update_target_network(); 
-}
+      memory(10000) {}
 
 int DQNAgent::act(const Matrix& state) {
     static std::random_device rd;
@@ -91,6 +82,26 @@ int DQNAgent::best_action(const Matrix& state) {
     }
     return best;
 }   
+
+void DQNAgent::build_architecture(const std::vector<std::pair<int, std::string>>& layers) {    
+    int current_dim = state_dim;
+    
+    for (const auto& [size, activation_name] : layers) {
+        auto act1 = create_activation(activation_name);
+        auto act2 = create_activation(activation_name);
+        
+        q_network.add_layer(
+            std::make_unique<Layer>(current_dim, size, std::move(act1))
+        );
+        target_network.add_layer(
+            std::make_unique<Layer>(current_dim, size, std::move(act2))
+        );
+        
+        current_dim = size;
+    }        
+    
+    update_target_network();
+}
 
 void DQNAgent::save(const std::string& filename) const {
     std::ofstream file(filename);
