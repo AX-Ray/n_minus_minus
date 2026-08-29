@@ -5,7 +5,7 @@ import numpy as np
 log_path = "../logs/log.txt"
 
 if not os.path.exists(log_path):
-    print(f"Ошибка: Файл {log_path} не найден!")
+    print(f"Error: File {log_path} not found!")
     exit(1)
 
 epochs = []
@@ -34,16 +34,16 @@ log_losses = np.log10(losses)
 fig = plt.figure(figsize=(12, 8))
 ax = fig.add_subplot(111, projection='3d')
 
-points = ax.scatter(epochs, l_rs, log_losses, c=epochs, cmap='jet', s=15, label='Шаги обучения')
-ax.plot(epochs, l_rs, log_losses, color='gray', alpha=0.5, linewidth=1.5) # Соединительная линия
+points = ax.scatter(epochs, l_rs, log_losses, c=epochs, cmap='jet', s=15, label='Training steps')
+ax.plot(epochs, l_rs, log_losses, color='gray', alpha=0.5, linewidth=1.5)
 
-ax.set_title("3D Траектория обучения нейросети", fontsize=14, fontweight='bold')
-ax.set_xlabel("Текущая эпоха (Time)", fontsize=11, labelpad=10)
-ax.set_ylabel("Скорость обучения (Learning Rate)", fontsize=11, labelpad=10)
-ax.set_zlabel("Логарифм ошибки log10(Loss)", fontsize=11, labelpad=10)
+ax.set_title("3D Training Trajectory of Neural Network", fontsize=14, fontweight='bold')
+ax.set_xlabel("Epoch (Time)", fontsize=11, labelpad=10)
+ax.set_ylabel("Learning Rate", fontsize=11, labelpad=10)
+ax.set_zlabel("log10(Loss)", fontsize=11, labelpad=10)
 
 cbar = fig.colorbar(points, ax=ax, pad=0.1, shrink=0.6)
-cbar.set_label('Шкала эпох (Прогресс обучения)')
+cbar.set_label('Epoch scale (Training progress)')
 
 ax.grid(True)
 
