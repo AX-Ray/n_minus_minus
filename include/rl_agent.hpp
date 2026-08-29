@@ -25,10 +25,19 @@ public:
     double get_epsilon() const {return epsilon; }
     double get_gamma() const { return gamma; }
     double get_learning_rate() const { return learning_rate; }
+    int get_state_dim() const { return state_dim; }
+    int get_action_size() const { return action_size; }
+    Network& get_q_network() { return q_network; }
+    const Network& get_q_network() const { return q_network; }
+    Network& get_target_network() { return target_network; }
+    const Network& get_target_network() const { return target_network; }
     
     void set_epsilon(double eps) { epsilon = eps; }
     void set_gamma(double g) { gamma = g; }
     void set_learning_rate(double lr) { learning_rate = lr; }
-
+    
     int best_action(const Matrix& state);  
+    
+    void save(const std::string& filename) const;
+    void load(const std::string& filename);
 };

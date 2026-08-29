@@ -89,34 +89,79 @@ void Network::copy_weights_from(const Network& other) {
 }
 
 
+
+void Network::save(std::ostream& os) const {
+    os << layers.size() << std::endl;
+
+    for (const auto& layer : layers) {
+        os << layer->get_input_size() << " " << layer->get_output_size() << std::endl;
+        os << layer->get_activation_name() << std::endl;
+
+        const Matrix& weights = layer->get_weights();
+        for (int r = 0; r < weights.rows; ++r) {
+            for (int c = 0; c < weights.cols; ++c) {
+                os << weights(r, c) << " ";
+            }
+            os << std::endl;
+        }
+
+        const Matrix& biases = layer->get_biases();
+        for (int r = 0; r < biases.rows; ++r) {
+            os << biases(r, 0) << " ";
+        }
+        os << std::endl;
+    }
+}
+
+void Network::load(std::istream& is) {
+    size_t num_layers;
+    is >> num_layers;
+    if (!is) {
+        throw std::runtime_error("Failed to read number of layers");
+    }
+
+    layers.clear();
+
+    for (size_t i = 0; i < num_layers; ++i) {
+        int in, out;
+        std::string act_name;
+        is >> in >> out;
+        is >> act_name;
+        if (!is) {
+            throw std::runtime_error("Failed to read layer metadata");
+        }
+
+        Matrix weights(out, in);
+        for (int r = 0; r < weights.rows; ++r) {
+            for (int c = 0; c < weights.cols; ++c) {
+                is >> weights(r, c);
+            }
+        }
+
+        Matrix biases(out, 1);
+        for (int r = 0; r < biases.rows; ++r) {
+            is >> biases(r, 0);
+        }
+
+        if (!is) {
+            throw std::runtime_error("Failed to read weights/biases");
+        }
+
+        auto activation = create_activation(act_name);
+        auto layer = std::make_unique<Layer>(in, out, std::move(activation));
+        layer->set_weights(weights);
+        layer->set_biases(biases);
+        layers.push_back(std::move(layer));
+    }
+}
+
 void Network::save(const std::string& filename) const {
     std::ofstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Cannot open file: " << filename << std::endl;
         return;
     }
-
-    file << layers.size() << std::endl;
-
-    for (const auto& layer : layers) {
-        file << layer->get_input_size() << " " << layer->get_output_size() << std::endl;
-        file << layer->get_activation_name() << std::endl;
-
-        const Matrix& weights = layer->get_weights();
-        for (int r = 0; r < weights.rows; ++r) {
-            for (int c = 0; c < weights.cols; ++c) {
-                file << weights(r, c) << " ";
-            }
-            file << std::endl;
-        }
-
-        const Matrix& biases = layer->get_biases();
-        for (int r = 0; r < biases.rows; ++r) {
-            file << biases(r, 0) << " ";
-        }
-        file << std::endl;
-    }
-
+    save(file);
     file.close();
     std::cout << "Model saved to " << filename << std::endl;
 }
@@ -127,80 +172,13 @@ void Network::load(const std::string& filename) {
         std::cerr << "Cannot open file: " << filename << std::endl;
         return;
     }
-
-    size_t num_layers;
-    file >> num_layers;
-    if (!file) {
-        std::cerr << "Error reading number of layers from " << filename << std::endl;
+    try {
+        load(file);
+    } catch (const std::exception& e) {
+        std::cerr << "Error loading model: " << e.what() << std::endl;
         file.close();
         return;
     }
-    
-    layers.clear();
-    
-    struct layer_data {
-        int input_size;
-        int output_size;
-        std::string activation_name;
-        Matrix weights;
-        Matrix biases;
-
-        layer_data(int in, int out) : input_size(in), output_size(out), weights(out, in), biases(out, 1) {} };
-
-    std::vector<layer_data> layer_data_vec;
-    layer_data_vec.reserve(num_layers);
-    
-    for (size_t i = 0; i < num_layers; ++i) {
-        int in, out;
-        std::string act_name;
-        file >> in >> out;
-        file >> act_name;
-        if (!file) {
-            std::cerr << "Error reading metadata for layer " << i << std::endl;
-            file.close();
-            return;
-        }
-
-        layer_data data(in, out);
-        data.input_size = in;
-        data.output_size = out;
-        data.activation_name = act_name;
-        
-        Matrix weights(out, in);
-        for (int r = 0; r < weights.rows; ++r) {
-            for (int c = 0; c < weights.cols; ++c) {
-                file >> weights(r, c);
-            }
-        }
-        
-        Matrix biases(out, 1);
-        for (int r = 0; r < biases.rows; ++r) {
-            file >> biases(r, 0);
-        }
-
-        if (!file) {
-            std::cerr << "Error reading weights/biases for layer " << i << std::endl;
-            file.close();
-            return;
-        }
-
-        data.weights = std::move(weights);
-        data.biases = std::move(biases);
-        layer_data_vec.push_back(std::move(data));
-    }
-    
-    for (const auto& data : layer_data_vec) {
-        auto activation = create_activation(data.activation_name);
-        auto layer = std::make_unique<Layer>(
-            data.input_size,
-            data.output_size,
-            std::move(activation)
-        );
-        layer->set_weights(data.weights);
-        layer->set_biases(data.biases);
-        layers.push_back(std::move(layer));
-    }
-
     file.close();
     std::cout << "Model loaded from " << filename << std::endl;
 }

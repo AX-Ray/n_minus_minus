@@ -1,4 +1,5 @@
 #include "../include/activ.hpp"
+#include <stdexcept>
 
 double Sigmoid::forward(double x) {
     return 1.0 / (1.0 + std::exp(-x));
@@ -183,7 +184,7 @@ double GBA::softplus_centered(double x) const {
 }
 
 
-double GBA::forward(double x) const {
+double GBA::forward(double x) {
     double beta_x = beta * x;
         
     double sp_centered = (std::log(1.0 + std::exp(beta_x)) - std::log(2.0)) / beta;
@@ -193,7 +194,7 @@ double GBA::forward(double x) const {
     return epsilon * x + (1.0 - epsilon) * sp_centered + amplitude * bridge;
 }
 
-double GBA::backward(double x) const {
+double GBA::backward(double x) {
     double tanh_val = std::tanh(x + center);
     double sech_squared = 1.0 - tanh_val * tanh_val;
     

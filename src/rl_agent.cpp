@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 DQNAgent::DQNAgent(int state_dim, int action_size, double lr, double gamma, double eps, double eps_min, double eps_decay)
     : gamma(gamma), epsilon(eps), epsilon_min(eps_min),
@@ -88,4 +90,82 @@ int DQNAgent::best_action(const Matrix& state) {
         if (q_values(i, 0) > q_values(best, 0)) best = i;
     }
     return best;
+}   
+
+void DQNAgent::save(const std::string& filename) const {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Cannot open file: " << filename << std::endl;
+        return;
+    }
+    
+    file << "DQNAgent" << std::endl;
+    file << state_dim << " " << action_size << std::endl;
+    file << learning_rate << " " << gamma << " " << epsilon << " ";
+    file << epsilon_min << " " << epsilon_decay << std::endl;
+    
+    q_network.save(file);
+    file << std::endl;
+    target_network.save(file);
+
+    file.close();
+    std::cout << "DQNAgent saved to " << filename << std::endl;
+}
+
+void DQNAgent::load(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Cannot open file: " << filename << std::endl;
+        return;
+    }
+    
+    std::string header;
+    file >> header;
+    if (header != "DQNAgent") {
+        std::cerr << "Invalid file format: expected 'DQNAgent', got '" << header << "'" << std::endl;
+        file.close();
+        return;
+    }
+    
+    int saved_state_dim, saved_action_size;
+    file >> saved_state_dim >> saved_action_size;
+    if (!file) {
+        std::cerr << "Error reading state/action dimensions" << std::endl;
+        file.close();
+        return;
+    }
+    
+    if (saved_state_dim != state_dim || saved_action_size != action_size) {
+        std::cerr << "State/action dimension mismatch: expected ("
+                  << state_dim << "," << action_size << ") but got ("
+                  << saved_state_dim << "," << saved_action_size << ")" << std::endl;
+        file.close();
+        return;
+    }
+    
+    double lr, gamma, eps, eps_min, eps_decay;
+    file >> lr >> gamma >> eps >> eps_min >> eps_decay;
+    if (!file) {
+        std::cerr << "Error reading hyperparameters" << std::endl;
+        file.close();
+        return;
+    }
+    
+    learning_rate = lr;
+    this->gamma = gamma;
+    epsilon = eps;
+    epsilon_min = eps_min;
+    epsilon_decay = eps_decay;
+    
+    try {
+        q_network.load(file);
+        target_network.load(file);
+    } catch (const std::exception& e) {
+        std::cerr << "Error loading networks: " << e.what() << std::endl;
+        file.close();
+        return;
+    }
+
+    file.close();
+    std::cout << "DQNAgent loaded from " << filename << std::endl;
 }
