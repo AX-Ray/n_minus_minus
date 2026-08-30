@@ -43,8 +43,8 @@ net.save("models/model.txt");
 ```
 ├── build/
 ├── examples/                    # Examples
-│   ├── sin_example              # Approximate sin(x)
-│   ├── lunar_landing            # Train DQN on Lunar Lander 
+│   ├── sin_example/             # Approximate sin(x)
+│   ├── lunar_landing/           # Train DQN on Lunar Lander 
 │   └── main.cpp                 # Approximate x²
 ├── include/                     # Header files
 │   ├── activ.hpp                # All activation functions
