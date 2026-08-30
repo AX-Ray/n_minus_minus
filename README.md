@@ -1,6 +1,9 @@
 # N-- 
 
 ![C++17](https://img.shields.io/badge/C++-17-blue?style=for-the-badge&logo=c%2B%2B)
+![ML](https://img.shields.io/badge/Machine%20Learning-0080FF?style=for-the-badge)
+![RL](https://img.shields.io/badge/Reinforcement%20Learning-FF6B6B?style=for-the-badge)
+![DQN](https://img.shields.io/badge/DQN-Deep%20Q--Network-red?style=for-the-badge)
 
 ---
 
